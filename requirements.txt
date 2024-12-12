@@ -1,1 +1,6 @@
-
+pandas
+streamlit
+matplotlib
+openpyxl
+numpy
+requests
