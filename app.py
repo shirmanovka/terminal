@@ -5,12 +5,8 @@ import matplotlib.pyplot as plt
 # Заголовок приложения
 st.title("Фильтр данных по погашению")
 
-# Загрузка файла Excel
-uploaded_file = st.file_uploader('Карта рынка fix.xlsx')
-
-if uploaded_file is not None:
     # Чтение данных из Excel
-    df = pd.read_excel(uploaded_file, skiprows=1)
+    df = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
 
     # Преобразование колонки 'Погашение' в формат datetime
     df['Погашение'] = pd.to_datetime(df['Погашение'], format='%d-%m-%Y', errors='coerce')
