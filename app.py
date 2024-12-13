@@ -12,18 +12,16 @@ df = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
 df['Погашение'] = pd.to_datetime(df['Погашение'], format='%d-%m-%Y', errors='coerce')
 
 
-# Проверка, какие месяцы и годы доступны для фильтрации
-available_months = df['Погашение'].dt.month.unique()
-available_years = df['Погашение'].dt.year.unique()
+   # Проверка, какие даты доступны для фильтрации
+min_date = df['Погашение'].min()
+max_date = df['Погашение'].max()
 
-# Выбор месяца и года для фильтрации
-month_to_filter = st.selectbox("Выберите месяц для фильтрации", options=available_months)
-year_to_filter = st.selectbox("Выберите год для фильтрации", options=available_years)
+    # Выбор диапазона дат для фильтрации
+start_date = st.date_input("Выберите начальную дату", min_value=min_date, max_value=max_date, value=min_date)
+end_date = st.date_input("Выберите конечную дату", min_value=min_date, max_value=max_date, value=max_date)
 
-
-    # Фильтрация по месяцу и году
-filtered_df = df[(df['Погашение'].dt.month == month_to_filter) & (df['Погашение'].dt.year == year_to_filter)]
-
+    # Фильтрация по диапазону дат
+filtered_df = df[(df['Погашение'] >= pd.Timestamp(start_date)) & (df['Погашение'] <= pd.Timestamp(end_date))]
     # Вывод отфильтрованных данных
 st.write("Отфильтрованные данные:")
 st.dataframe(filtered_df)
@@ -31,8 +29,9 @@ st.dataframe(filtered_df)
     # Визуализация данных (если требуется)
 if not filtered_df.empty:
     plt.figure(figsize=(10, 5))
-    plt.plot(filtered_df['Погашение'], filtered_df['Объем, млн'], marker='o')  # Замените 'Некоторый_столбец' на нужный вам столбец
+    plt.bar(filtered_df['Погашение'], filtered_df['Объем, млн'], color='skyblue')  # Замените 'Некоторый_столбец' на нужный вам столбец
     plt.title('График погашений')
     plt.xlabel('Дата погашения')
     plt.ylabel('Объем, млн')
+    plt.xticks(rotation=45)
     st.pyplot(plt)
