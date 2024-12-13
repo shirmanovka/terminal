@@ -10,6 +10,7 @@ df = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
 
     # Преобразование колонки 'Погашение' в формат datetime
 df['Погашение'] = pd.to_datetime(df['Погашение'], format='%d-%m-%Y', errors='coerce')
+df['Объем, млн'] = pd.to_numeric(df['Объем, млн'], errors='coerce')
 
 
    # Проверка, какие даты доступны для фильтрации
