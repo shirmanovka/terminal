@@ -38,7 +38,7 @@ st.dataframe(filtered_df)
     # Визуализация данных (если требуется)
 if not filtered_df.empty:
     plt.figure(figsize=(10, 5))
-    plt.bar(filtered_df['Погашение'], filtered_df['Объем, млн'], color='skyblue')  # Замените 'Некоторый_столбец' на нужный вам столбец
+    plt.bar(filtered_df['Погашение'], filtered_df['Объем, млн'], color='darkred')  # Замените 'Некоторый_столбец' на нужный вам столбец
     plt.title('График погашений')
     plt.xlabel('Дата погашения')
     plt.ylabel('Объем, млн')
