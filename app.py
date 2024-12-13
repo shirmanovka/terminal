@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.title("Фильтр данных по погашению")
 
 # Загрузка файла Excel
-uploaded_file = st.file_uploader('Карта рынка fix.xlsx', skiprows=1)
+uploaded_file = st.file_uploader('Карта рынка fix.xlsx')
 
 if uploaded_file is not None:
     # Чтение данных из Excel
