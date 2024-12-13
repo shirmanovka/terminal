@@ -25,7 +25,7 @@ end_date = st.date_input("Выберите конечную дату", min_value
 
 # Фильтрация по валюте
 unique_currencies = df['Валюта'].unique()  # Получаем уникальные валюты
-selected_currency = st.selectbox("Выберите валюту", unique_currencies)  # Выбор валюты
+selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
    
 # Фильтрация по диапазону дат
 filtered_df = df[(df['Погашение'] >= pd.Timestamp(start_date)) & 
