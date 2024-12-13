@@ -30,7 +30,7 @@ selected_currency = st.multiselect("Выберите валюту", unique_curre
 # Фильтрация по диапазону дат
 filtered_df = df[(df['Погашение'] >= pd.Timestamp(start_date)) & 
                   (df['Погашение'] <= pd.Timestamp(end_date)) & 
-                  (df['Валюта'] == selected_currency)]
+                  (df['Валюта'].isin( selected_currency))]
     # Вывод отфильтрованных данных
 st.write("Отфильтрованные данные:")
 st.dataframe(filtered_df)
@@ -44,3 +44,5 @@ if not filtered_df.empty:
     plt.ylabel('Объем, млн')
     plt.xticks(rotation=45)
     st.pyplot(plt)
+else:
+    st.write("Нет данных для отображения с выбранными параметрами.")
