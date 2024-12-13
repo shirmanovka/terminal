@@ -32,7 +32,7 @@ st.dataframe(filtered_df)
 if not filtered_df.empty:
     plt.figure(figsize=(10, 5))
     plt.plot(filtered_df['Погашение'], filtered_df['Объем, млн'], marker='o')  # Замените 'Некоторый_столбец' на нужный вам столбец
-    plt.title('График по отфильтрованным данным')
+    plt.title('График погашений')
     plt.xlabel('Дата погашения')
     plt.ylabel('Объем, млн')
     st.pyplot(plt)
