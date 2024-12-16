@@ -48,5 +48,6 @@ if not filtered_df.empty:
     for bar, ticker in zip(bars, filtered_df['Тикер']):  # Предполагается, что в DataFrame есть колонка 'Тикер'
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2, yval, ticker, ha='center', va='bottom')
+    st.pyplot(plt)
 else:
     st.write("Нет данных для отображения с выбранными параметрами.")
