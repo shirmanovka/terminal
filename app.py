@@ -35,19 +35,18 @@ filtered_df = df[(df['Погашение'] >= pd.Timestamp(start_date)) &
 st.write("Отфильтрованные данные:")
 st.dataframe(filtered_df)
 
-    # Визуализация данных (если требуется)
+# Визуализация данных (если есть отфильтрованные данные)
 if not filtered_df.empty:
     plt.figure(figsize=(10, 5))
-    plt.bar(filtered_df['Погашение'], filtered_df['Объем, млн'], color='darkred')  # Замените 'Некоторый_столбец' на нужный вам столбец
+    bars = plt.bar(filtered_df['Погашение'], filtered_df['Объем, млн'], color='darkred')
     plt.title('График погашений')
     plt.xlabel('Дата погашения')
     plt.ylabel('Объем, млн')
     plt.xticks(rotation=45)
-      # Добавление подписей к столбцам
+
+    # Добавление подписей к столбцам
     for bar, ticker in zip(bars, filtered_df['Тикер']):  # Предполагается, что в DataFrame есть колонка 'Тикер'
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2, yval, ticker, ha='center', va='bottom')
-    st.pyplot(plt)
-
 else:
     st.write("Нет данных для отображения с выбранными параметрами.")
