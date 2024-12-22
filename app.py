@@ -48,10 +48,6 @@ max_date = df3['Погашение'].max()
 start_date = st.date_input("Выберите начальную дату", min_value=min_date, max_value=max_date, value=min_date)
 end_date = st.date_input("Выберите конечную дату", min_value=min_date, max_value=max_date, value=max_date)
 
-# Фильтрация по валюте
-unique_currencies = df3['Валюта'].unique()  # Получаем уникальные валюты
-selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
-
 # Поле для ввода списка ISIN
 isin_input = st.text_area("Введите свои ISIN (по одному на строку):", height=150)
 
@@ -62,14 +58,15 @@ input_isin_list = [line.strip() for line in isin_input.splitlines() if line.stri
 tickers = df3['Тикер'].unique()
 selected_tickers = st.multiselect('Выберите тикер:', tickers)
 
-ratings = df3['Рейтинг'].unique()
-selected_ratings = st.multiselect('Выберите рейтинг:', ratings)
+# Фильтрация по валюте
+unique_currencies = df3['Валюта'].unique()  # Получаем уникальные валюты
+selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
+
 
 # Фильтрация данных
 filtered_df = df3[
     (df3['ISIN'].isin(input_isin_list) | (len(input_isin_list) == 0)) &
     (df3['Тикер'].isin(selected_tickers) | (len(selected_tickers) == 0)) &
-    (df3['Рейтинг'].isin(selected_ratings) | (len(selected_ratings) == 0)) &
     (df3['Погашение'] >= pd.Timestamp(start_date)) &
     (df3['Погашение'] <= pd.Timestamp(end_date)) &
     (df3['Валюта'].isin(selected_currency))
