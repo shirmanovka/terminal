@@ -12,7 +12,6 @@ df_1 = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
 df_1['Базовая ставка'] ='fix'
 df['Базовая ставка'] = 'floater'
 
-#df['Базовая ставка'] = df['Базовая ставка'] + df['Спред, пп']
 
 df['Погашение'] = pd.to_datetime(df['Погашение'], format='%d-%m-%Y', errors='coerce')
 df_1['Погашение'] = pd.to_datetime(df_1['Погашение'], format='%d-%m-%Y', errors='coerce')
