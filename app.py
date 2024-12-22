@@ -5,9 +5,8 @@ import plotly.graph_objects as go
 # Заголовок приложения
 st.title("Фильтр данных по погашению")
 
-
-df = pd.read_excel(('/Users/shirmanov/Downloads/Карта рынка.xlsx'), skiprows=1)
-df_1 = pd.read_excel(('/Users/shirmanov/Downloads/Карта рынка fix.xlsx'), skiprows=1)
+df = pd.read_excel('Карта рынка.xlsx', skiprows=1)
+df_1 = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
 
 df_1['Базовая ставка'] ='fix'
 df['Базовая ставка'] = 'floater'
