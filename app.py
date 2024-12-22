@@ -57,17 +57,6 @@ filtered_df = df3[(df3['Погашение'] >= pd.Timestamp(start_date)) &
                   (df3['Погашение'] <= pd.Timestamp(end_date)) & 
                   (df3['Валюта'].isin(selected_currency))]
 
-# Добавление кнопки для фильтрации за ближайшие 3 месяца
-if st.button("Фильтровать за будущие 3 месяца"):
-    three_months_ago = datetime.now() + timedelta(days=90)
-    start_date = datetime.now()
-    end_date = three_months_ago
-    
-    # Обновление отфильтрованных данных
-    filtered_df = df3[(df3['Погашение'] >= pd.Timestamp(start_date)) & 
-                      (df3['Погашение'] <= pd.Timestamp(end_date)) & 
-                      (df3['Валюта'].isin(selected_currency))]
-         
 # Вывод отфильтрованных данных
 st.write("Отфильтрованные данные:")
 st.dataframe(filtered_df)
