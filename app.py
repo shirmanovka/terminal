@@ -65,10 +65,10 @@ selected_currency = st.multiselect("Выберите валюту", unique_curre
 
 # Фильтрация данных
 filtered_df = df3[
-    (df3['ISIN'].isin(input_isin_list) | (len(input_isin_list) == 0)) |
-    (df3['Тикер'].isin(selected_tickers) | (len(selected_tickers) == 0)) |
+    (df3['ISIN'].isin(input_isin_list) | (len(input_isin_list) == 0)) &
+    (df3['Тикер'].isin(selected_tickers) | (len(selected_tickers) == 0)) &
     (df3['Погашение'] >= pd.Timestamp(start_date)) &
-    (df3['Погашение'] <= pd.Timestamp(end_date)) |
+    (df3['Погашение'] <= pd.Timestamp(end_date)) &
     (df3['Валюта'].isin(selected_currency))
 ]
 
