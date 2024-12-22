@@ -51,6 +51,11 @@ end_date = st.date_input("Выберите конечную дату", min_value
 unique_currencies = df3['Валюта'].unique()  # Получаем уникальные валюты
 selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
 
+ Фильтрация по диапазону дат
+filtered_df = df3[(df3['Погашение'] >= pd.Timestamp(start_date)) & 
+                  (df3['Погашение'] <= pd.Timestamp(end_date)) & 
+                  (df3['Валюта'].isin(selected_currency))]
+
 # Добавление кнопки для фильтрации за ближайшие 3 месяца
 if st.button("Фильтровать за ближайшие 3 месяца"):
     three_months_ago = datetime.now() - timedelta(days=90)
@@ -61,7 +66,7 @@ if st.button("Фильтровать за ближайшие 3 месяца"):
     filtered_df = df3[(df3['Погашение'] >= pd.Timestamp(start_date)) & 
                       (df3['Погашение'] <= pd.Timestamp(end_date)) & 
                       (df3['Валюта'].isin(selected_currency))]
-
+         
 # Вывод отфильтрованных данных
 st.write("Отфильтрованные данные:")
 st.dataframe(filtered_df)
