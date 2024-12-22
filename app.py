@@ -92,10 +92,17 @@ if not filtered_df.empty:
 
     # Обновление макета графика
     fig.update_layout(
-        title='График погашений',
+        title={
+            'text': 'График погашений',
+            'font': {'size': 18},  # Размер шрифта заголовка
+            'x': 0.5,  # Центрирование заголовка по оси X
+            'xanchor': 'center'  # Якорь заголовка
+        },
         xaxis_title='Дата погашения',
         yaxis_title='Объем, млн',
-        xaxis_tickformat='%Y-%m-%d'
+        xaxis_tickformat='%Y-%m-%d',
+        xaxis_title_font={'size': 16},  # Размер шрифта подписи по оси X
+        yaxis_title_font={'size': 16} 
     )
 
     # Отображение графика в Streamlit
