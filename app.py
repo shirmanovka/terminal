@@ -51,7 +51,7 @@ end_date = st.date_input("Выберите конечную дату", min_value
 unique_currencies = df3['Валюта'].unique()  # Получаем уникальные валюты
 selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
 
- Фильтрация по диапазону дат
+ #Фильтрация по диапазону дат
 filtered_df = df3[(df3['Погашение'] >= pd.Timestamp(start_date)) & 
                   (df3['Погашение'] <= pd.Timestamp(end_date)) & 
                   (df3['Валюта'].isin(selected_currency))]
