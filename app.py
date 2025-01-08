@@ -1,114 +1,156 @@
-import pandas as pd
 import streamlit as st
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
+import requests
+import pandas as pd
+import plotly.express as px
+from datetime import datetime
 
 # Заголовок приложения
-st.title("Фильтр данных по погашению")
+st.title("Финансовые инструменты")
 
-df = pd.read_excel('Карта рынка.xlsx', skiprows=1)
-df_1 = pd.read_excel('Карта рынка fix.xlsx', skiprows=1)
+# Функция для получения данных ставки ЦБ РФ
+def get_exchange_rates():
+    moex_url_cbrf = 'https://iss.moex.com//iss/statistics/engines/currency/markets/selt/rates.json'
+    
+    try:
+        response = requests.get(moex_url_cbrf)
+        if response.status_code == 200:
+            result = response.json()
+            col_names = result['cbrf']['columns']
+            df = pd.DataFrame(result['cbrf']['data'], columns=col_names)
+            return df
+        else:
+            st.error(f'Ошибка при получении данных. Код состояния: {response.status_code}')
+    except Exception as e:
+        st.error(f'Произошла ошибка при запросе данных: {e}')
 
-df_1['Базовая ставка'] ='fix'
-df['Базовая ставка'] = 'floater'
+# Функция для получения данных кривых свопов
+def get_swap_curves():
+    moex_url = 'https://iss.moex.com//iss/sdfi/curves/securities.json'
+    
+    try:
+        response = requests.get(moex_url)
+        if response.status_code == 200:
+            result = response.json()
+            col_names = result['curves']['columns']
+            df = pd.DataFrame(result['curves']['data'], columns=col_names)
+            return df
+        else:
+            st.error(f'Ошибка при получении данных. Код состояния: {response.status_code}')
+    except Exception as e:
+        st.error(f'Произошла ошибка при запросов данных: {e}')
 
+# Функция для получения данных MOEX
+def get_moex_data():
+    moex_url = 'https://iss.moex.com/iss/engines/stock/markets/index/securities/imoex.json'
+    
+    try:
+        response = requests.get(moex_url)
+        if response.status_code == 200:
+            result = response.json()
+            col_names = result['marketdata']['columns']
+            df = pd.DataFrame(result['marketdata']['data'], columns=col_names)
+            return df
+        else:
+            st.error(f'Ошибка при получении данных. Код состояния: {response.status_code}')
+    except Exception as e:
+        st.error(f'Произошла ошибка при запросах данных: {e}')
 
-df['Погашение'] = pd.to_datetime(df['Погашение'], format='%d-%m-%Y', errors='coerce')
-df_1['Погашение'] = pd.to_datetime(df_1['Погашение'], format='%d-%m-%Y', errors='coerce')
+# Объединенная функция для получения всех данных
+def get_all_data():
+    # Получаем данные по валютам
+    exchange_rates = get_exchange_rates()
+    # Получаем данные по кривым свопов
+    swap_curves = get_swap_curves()
+    # Получаем данные по MOEX
+    moex_data = get_moex_data()
+    
+    # Объединяем данные в единый DataFrame
+    final_data = pd.concat([exchange_rates, swap_curves, moex_data], axis=1)
+    
+    # Форматируем и добавляем нужные колонки
+    final_data = final_data.reset_index(drop=False)
+    final_data = final_data[['CBRF_USD_LAST', 'swap_rate', 'CURRENTVALUE']]
+    final_data['USD_CHANGE'] = final_data['CBRF_USD_LASTCHANGEPRCNT']
+    final_data['EUR_CHANGE'] = final_data['CBRF_EUR_LASTCHANGEPRCNT']
+    final_data['MOEX_CHANGE'] = final_data['LASTCHANGE']
+    final_data['USD_DATE'] = pd.to_datetime(final_data['CBRF_USD_TRADEDATE']).dt.date
+    final_data['EUR_DATE'] = pd.to_datetime(final_data['CBRF_EUR_TRADEDATE']).dt.date
+    final_data['MOEX_DATE'] = final_data['TRADEDATE']
+    
+    # Разделяем данные на четыре колонки
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.subheader("Доллар США")
+        st.write(f"Курс: ${final_data['CBRF_USD_LAST'].round(2)}")
+        change_color = "green" if final_data['USD_CHANGE'] > 0 else "red"
+        st.markdown(f"<p style='color:{change_color}; font-size:20px;'>Изменение: {final_data['USD_CHANGE']:.2f}%</p>", unsafe_allow_html=True)
+        st.write(f"Дата обновления: {final_data['USD_DATE']} (USD)")
+    
+    with col2:
+        st.subheader("Евро")
+        st.write(f"Курс: €{final_data['CBRF_EUR_LAST'].round(2)}")
+        change_color = "green" if final_data['EUR_CHANGE'] > 0 else "red"
+        st.markdown(f"<p style='color:{change_color}; font-size:20px;'>Изменение: {final_data['EUR_CHANGE']:.2f}%</p>", unsafe_allow_html=True)
+        st.write(f"Дата обновления: {final_data['EUR_DATE']} (EUR)")
+    
+    with col3:
+        st.subheader("RGBI")
+        st.write(f"Курс: {final_data['CURRENTVALUE'].round(2)}")
+        change_color = "green" if final_data['MOEX_CHANGE'] > 0 else "red"
+        st.markdown(f"<p style='color:{change_color}; font-size:20px;'>Изменение: {final_data['MOEX_CHANGE']:.2f}%</p>", unsafe_allow_html=True)
+        st.write(f"Дата обновления: {final_data['MOEX_DATE']} (RGBI)")
+    
+    with col4:
+        st.subheader("IMOEX")
+        st.write(f"Курс: {final_data['CURRENTVALUE'].round(2)}")
+        change_color = "green" if final_data['MOEX_CHANGE'] > 0 else "red"
+        st.markdown(f"<p style='color:{change_color}; font-size:20px;'>Изменение: {final_data['MOEX_CHANGE']:.2f}%</p>", unsafe_allow_html=True)
+        st.write(f"Дата обновления: {final_data['MOEX_DATE']} (IMOEX)")
 
-# Очистка и преобразование столбца 'Объем, млн'
-df['Объем, млн'] = df['Объем, млн'].astype(str).str.replace("'", "", regex=False)
-df['Объем, млн'] = pd.to_numeric(df['Объем, млн'], errors='coerce')
+# Блок с графиками кривых свопов
+st.header("Графики кривых свопов")
 
-df_1['Объем, млн'] = df_1['Объем, млн'].astype(str).str.replace("'", "", regex=False)
-df_1['Объем, млн'] = pd.to_numeric(df_1['Объем, млн'], errors='coerce')
+# Автоматический запрос данных
+curves_data = get_swap_curves()
 
-#Создание малых дата фреймов
-df1 = df[['ISIN', 'Тикер', 'Рейтинг', 'Валюта', 'Объем, млн', 
-         'Погашение','Опцион', 'Базовая ставка' ]].copy()
-
-df_2 = df_1[['ISIN', 'Тикер', 'Рейтинг', 'Валюта', 'Объем, млн', 
-         'Погашение','Опцион','Базовая ставка' ]].copy()
-
-
-# Заполнить отсутствующие столбцы значением np.nan
-df1 = df1.reindex(columns=df_2.columns)
-df_2 = df_2.reindex(columns=df1.columns)
-
-# Объединить df1 и df_2
-df3 = pd.concat([df1, df_2], ignore_index=True)
-
-
-# Проверка, какие даты доступны для фильтрации
-min_date = df3['Погашение'].min()
-max_date = df3['Погашение'].max()
-
-# Выбор диапазона дат для фильтрации
-start_date = st.date_input("Выберите начальную дату", min_value=min_date, max_value=max_date, value=min_date)
-end_date = st.date_input("Выберите конечную дату", min_value=min_date, max_value=max_date, value=max_date)
-
-# Поле для ввода списка ISIN
-isin_input = st.text_area("Введите свои ISIN (по одному на строку):", height=150)
-
-# Преобразуем введенный текст в список ISIN
-input_isin_list = [line.strip() for line in isin_input.splitlines() if line.strip()]
-
-# Фильтры для столбцов Тикер и Рейтинг
-tickers = df3['Тикер'].unique()
-selected_tickers = st.multiselect('Выберите тикер:', tickers)
-
-# Фильтрация по валюте
-unique_currencies = df3['Валюта'].unique()  # Получаем уникальные валюты
-selected_currency = st.multiselect("Выберите валюту", unique_currencies)  # Выбор валюты
-
-
-# Фильтрация данных
-filtered_df = df3[
-    (df3['ISIN'].isin(input_isin_list) | (len(input_isin_list) == 0)) &
-    (df3['Тикер'].isin(selected_tickers) | (len(selected_tickers) == 0)) &
-    (df3['Погашение'] >= pd.Timestamp(start_date)) &
-    (df3['Погашение'] <= pd.Timestamp(end_date)) |
-    (df3['Валюта'].isin(selected_currency))
-]
-
-
-# Вывод отфильтрованных данных
-st.write("Отфильтрованные данные:")
-st.dataframe(filtered_df)
-
-# Визуализация данных (если есть отфильтрованные данные)
-if not filtered_df.empty:
-    # Создание графика с использованием Plotly
-    fig = go.Figure(data=[
-        go.Bar(
-            x=filtered_df['Погашение'],
-            y=filtered_df['Объем, млн'],
-            text=filtered_df['Тикер'],  # Подписи для всплывающих подсказок
-            hoverinfo='text',  # Показать только текст при наведении
-            marker_color='darkred'
-        )
-    ])
-
-    # Обновление макета графика
-    fig.update_layout(
-        title={
-            'text': 'График погашений',
-            'font': {'size': 18},  # Размер шрифта заголовка
-            'x': 0.5,  # Центрирование заголовка по оси X
-            'xanchor': 'center'  # Якорь заголовка
-        },
-        xaxis_title='Дата погашения',
-        yaxis_title='Объем, млн',
-        xaxis_tickformat='%Y-%m-%d',
-        xaxis_title_font={'size': 16},  # Размер шрифта подписи по оси X
-        yaxis_title_font={'size': 16} 
-    )
-
-    # Отображение графика в Streamlit
-    st.plotly_chart(fig)
-
+if curves_data is not None:
+    # Убедимся, что столбец 'swap_curve' существует
+    if 'swap_curve' in curves_data.columns:
+        swap_curve_filter = st.selectbox('Выберите кривую:', options=curves_data['swap_curve'].unique())
+        filtered_data = curves_data.query(f"swap_curve == '{swap_curve_filter}'")
+        
+        # Получение даты выгрузки
+        trade_date_str = filtered_data['tradedate'].values[0]
+        trade_date = datetime.strptime(trade_date_str, '%Y-%m-%d').strftime('%d.%m.%Y')  # Преобразуем формат даты
+        
+        # Выводим дату выгрузки
+        st.write(f"Дата выгрузки: {trade_date}")
+        
+        # Строим график
+        fig = px.line(filtered_data, x='tenor', y='swap_rate', title=f"Кривая '{swap_curve_filter}'",
+                     labels={'tenor': 'Срок', 'swap_rate': 'Ставка'},
+                     template='plotly_dark')
+        
+        # Отображаем график
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("Столбец 'swap_curve' отсутствует в данных.")
 else:
-    st.write("Нет данных для отображения с выбранными параметрами.")
+    st.warning("Не удалось получить данные.")
 
+# Блок с таблицей MOEX
+st.header("Таблица MOEX")
 
-st.write("Филтрация данных не учитывает наличие оферт")
+# Отображение таблицы
+moex_table = final_data
+st.dataframe(moex_table)
+
+# Завершающая часть кода
+if final_data is not None:
+    st.text(f"Данные MOEX успешно получены и отображены.")
+else:
+    st.warning("Не удалось получить данные MOEX.")
+
+# Заключение
+Этот код представляет собой упрощенную версию работы с финансовыми инструментами, включая курсы валют, кривые свопов и данные MOEX. Он обеспечивает простоту взаимодействия с различными источниками данных и улучшает визуализацию финансовых показателей.
