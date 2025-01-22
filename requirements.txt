@@ -1,5 +1,2 @@
 import requests
 import pandas as pd
-from telegram import Update, ForceReply
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import os
