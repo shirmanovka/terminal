@@ -5,5 +5,4 @@ openpyxl
 numpy
 requests
 plotly
-os
-ApplicationBuilder
+
